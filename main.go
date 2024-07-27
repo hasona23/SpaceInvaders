@@ -8,6 +8,7 @@ import (
 )
 
 type Game struct{}
+type Player struct{}
 
 func (g *Game) Update() error {
 	return nil
