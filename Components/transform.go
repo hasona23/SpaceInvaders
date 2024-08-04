@@ -1,4 +1,4 @@
-package components
+package Components
 
 type Transform struct {
 	X      int

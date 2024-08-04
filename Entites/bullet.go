@@ -2,21 +2,29 @@ package entities
 
 import (
 	"image"
+	"log"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	components "github.com/hasona23/SpaceInvaders/Components"
+	vec "github.com/hasona23/vec"
 )
 
 type Bullet struct {
 	components.Transform
 	components.Sprite
 	components.Vel
-	Dead bool
+	components.Rect
+	Dead    bool
+	Shooter string
 }
 
-func (Bullet) Init(X, Y, Speed, IsInverted int) Bullet {
-	bullet := Bullet{components.Transform{X: X, Y: Y, ScaleX: 3, ScaleY: 3}, components.Sprite{Img: nil, IsInverted: IsInverted}, components.Vel{Speed: 8}, false}
+func (Bullet) Init(X, Y, Speed, IsInverted int, shooter string) Bullet {
+	bullet := Bullet{components.Transform{X: X, Y: Y, ScaleX: 3, ScaleY: 3},
+		components.Sprite{Img: nil, IsInverted: IsInverted}, components.Vel{Speed: Speed},
+		components.Rect{}.Init(X, Y, 3*16, 3*16),
+		false,
+		shooter}
 	Img, _, _ := ebitenutil.NewImageFromFile("./assets/images/tilemap_packed.png")
 	bullet.Img = ebiten.NewImage(16, 16)
 	bullet.Img.DrawImage(Img.SubImage(image.Rect(4*16, 4*16, 5*16, 5*16)).(*ebiten.Image), nil)
@@ -28,12 +36,51 @@ func (bullet *Bullet) Draw(screen *ebiten.Image) {
 
 	op.GeoM.Scale(float64(bullet.IsInverted)*bullet.ScaleX, bullet.ScaleY)
 
-	op.GeoM.Translate(float64(bullet.X), float64(bullet.Y))
+	op.GeoM.Translate(float64(bullet.Transform.X), float64(bullet.Transform.Y))
 
 	screen.DrawImage(bullet.Img, &op)
 }
 
 func (bullet *Bullet) Update() {
-	bullet.X += bullet.Speed * bullet.IsInverted
-	bullet.Dead = (bullet.X > 1300 || bullet.X < -100)
+	bullet.Transform.X += bullet.Speed * bullet.IsInverted
+	bullet.Dead = (bullet.Transform.X > 1300 || bullet.Transform.X < -100)
+	bullet.Rect.Move(bullet.Transform.X, bullet.Transform.Y)
+}
+func UpdateBulletManager(bulletManager *vec.Vec[Bullet], enemyspawner *EnemySpawner, player *Player) {
+	for i, b := range bulletManager.Arr {
+		for j, b2 := range bulletManager.Arr {
+			if b.Rect.Intersect(b2.Rect) && !b.Dead && !b2.Dead && b2 != b {
+				bulletManager.At(j).Dead = true
+				bulletManager.At(i).Dead = true
+			}
+
+		}
+		if b.Intersect(player.Rect) && b.Shooter != "player" && !b.Dead {
+			bulletManager.At(i).Dead = true
+			player.Dec(1)
+
+		}
+		for j, e := range enemyspawner.Arr {
+			if b.Intersect(e.Rect) && !b.Dead && b.Shooter != "enemy" {
+				enemyspawner.At(j).Dead = true
+				bulletManager.At(i).Dead = true
+
+			}
+		}
+		if !bulletManager.At(i).Dead {
+			bulletManager.At(i).Update()
+
+		}
+
+	}
+	for k, b := range bulletManager.Arr {
+		if b.Dead {
+			err := bulletManager.PopIndex(k)
+			if err != nil && err.Error() != "index out of range" {
+				log.Fatal("Eror delte bullets", "  ", err)
+			}
+
+		}
+	}
+
 }
