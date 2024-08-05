@@ -19,4 +19,4 @@ require (
 	golang.org/x/text v0.16.0 // indirect
 )
 
-replace github.com/hasona23/vec => D:/Code/Go/Projects/vec
+replace github.com/hasona23/vec => /home/hasona23/Desktop/Go/Projects/vec/

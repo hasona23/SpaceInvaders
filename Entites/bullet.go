@@ -46,24 +46,26 @@ func (bullet *Bullet) Update() {
 	bullet.Dead = (bullet.Transform.X > 1300 || bullet.Transform.X < -100)
 	bullet.Rect.Move(bullet.Transform.X, bullet.Transform.Y)
 }
-func UpdateBulletManager(bulletManager *vec.Vec[Bullet], enemyspawner *EnemySpawner, player *Player) {
+func UpdateBulletManager(bulletManager *vec.Vec[Bullet], enemyspawner *EnemySpawner, player *Player, score *int) {
 	for i, b := range bulletManager.Arr {
 		for j, b2 := range bulletManager.Arr {
 			if b.Rect.Intersect(b2.Rect) && !b.Dead && !b2.Dead && b2 != b {
 				bulletManager.At(j).Dead = true
 				bulletManager.At(i).Dead = true
+				*score += 10
 			}
 
 		}
 		if b.Intersect(player.Rect) && b.Shooter != "player" && !b.Dead {
 			bulletManager.At(i).Dead = true
 			player.Dec(1)
-
+			*score -= 30
 		}
 		for j, e := range enemyspawner.Arr {
 			if b.Intersect(e.Rect) && !b.Dead && b.Shooter != "enemy" {
 				enemyspawner.At(j).Dead = true
 				bulletManager.At(i).Dead = true
+				*score += 20
 
 			}
 		}

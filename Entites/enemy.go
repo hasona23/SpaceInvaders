@@ -29,7 +29,7 @@ func (enemy Enemy) Init() Enemy {
 		false,
 	}
 	var err error
-	enemy.Atlas, _, err = ebitenutil.NewImageFromFile("D:/Code/Go/Projects/spaceInvaders/assets/images/tilemap_packed.png")
+	enemy.Atlas, _, err = ebitenutil.NewImageFromFile("./assets/images/tilemap_packed.png")
 	if err != nil {
 		log.Fatalf("Sorry failed import image as %v", err)
 	}
@@ -53,7 +53,7 @@ func (enemy *Enemy) Draw(screen *ebiten.Image) {
 
 }
 
-func (enemy *Enemy) Update(bulletManager *vec.Vec[Bullet], player *Player) {
+func (enemy *Enemy) Update(bulletManager *vec.Vec[Bullet], player *Player, score *int) {
 	if enemy.Dead {
 		return
 	}
@@ -67,6 +67,7 @@ func (enemy *Enemy) Update(bulletManager *vec.Vec[Bullet], player *Player) {
 	if enemy.Rect.Intersect(player.Rect) {
 		enemy.Dead = true
 		player.Hp.Dec(1)
+		*score += 100
 	}
 }
 
@@ -81,7 +82,7 @@ func (spawner EnemySpawner) Init() EnemySpawner {
 
 	return spawner
 }
-func (spawner *EnemySpawner) Update(bulletManager *vec.Vec[Bullet], player *Player) {
+func (spawner *EnemySpawner) Update(bulletManager *vec.Vec[Bullet], player *Player, score *int) {
 	spawner.Timer.UpdateTimer()
 	if spawner.Ticked() {
 		spawner.PushBack(Enemy{}.Init())
@@ -89,7 +90,7 @@ func (spawner *EnemySpawner) Update(bulletManager *vec.Vec[Bullet], player *Play
 
 	for i := range spawner.Arr {
 		if !(spawner.At(i).Transform.X < 0) {
-			spawner.At(i).Update(bulletManager, player)
+			spawner.At(i).Update(bulletManager, player, score)
 		}
 
 	}

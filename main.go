@@ -2,19 +2,16 @@ package main
 
 import (
 	"bytes"
-	"fmt"
-	"image/color"
 	"log"
 	"os"
+	"strconv"
 
 	entities "github.com/hasona23/SpaceInvaders/Entites"
 	vec "github.com/hasona23/vec"
 
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"github.com/hajimehoshi/ebiten/v2/text/v2"
-	"github.com/hajimehoshi/ebiten/v2/vector"
 )
 
 type Game struct {
@@ -22,46 +19,27 @@ type Game struct {
 	bulletManager vec.Vec[entities.Bullet]
 	spawner       entities.EnemySpawner
 	screenFilter  *ebiten.Image
+	score         int
+	highscore     int
 	paused        bool
 	state         int
 }
-
-const (
-	normal = iota
-	paused
-	Death
-)
 
 var GameStates map[int]string
 var source *text.GoTextFaceSource
 
 func (g *Game) Init() {
+	var err error
 	g.player = entities.Player{}.Init()
 	g.bulletManager.Init()
 	g.spawner = entities.EnemySpawner{}.Init()
-	g.paused = false
-	g.state = normal
-	GameStates = map[int]string{
-		0: "Normal",
-		1: "Paused",
-		2: "PlayerDied",
-	}
-	g.screenFilter, _, _ = ebitenutil.NewImageFromFile("D:/Code/Go/Projects/spaceInvaders/assets/images/pause.png")
-	font_file, err := os.ReadFile("./assets/Minecraft.ttf")
-	if err != nil {
-		log.Fatal("Error reading font file : ", err)
-	}
-	source, err = text.NewGoTextFaceSource(bytes.NewReader(font_file))
+
+	source, err = text.NewGoTextFaceSource(bytes.NewReader(g.UiInit()))
 	if err != nil {
 		log.Fatal("Error loading font :", err)
 	}
 }
-func Btoi(b bool) int {
-	if b {
-		return 1
-	}
-	return 0
-}
+
 func (g *Game) Death() {
 	g.state = Death
 	if g.state == Death && inpututil.IsKeyJustPressed(ebiten.KeyEnter) {
@@ -69,6 +47,13 @@ func (g *Game) Death() {
 	}
 }
 func (g *Game) Update() error {
+
+	if g.state == start {
+		if inpututil.IsKeyJustPressed(ebiten.KeyEnter) {
+			g.state = normal
+		}
+		return nil
+	}
 
 	if inpututil.IsKeyJustPressed(ebiten.KeyEscape) && g.player.Hp.GetHp() != 0 {
 		if g.state == paused {
@@ -82,8 +67,8 @@ func (g *Game) Update() error {
 
 	if g.state == normal {
 		g.player.Update(&g.bulletManager)
-		g.spawner.Update(&g.bulletManager, &g.player)
-		entities.UpdateBulletManager(&g.bulletManager, &g.spawner, &g.player)
+		g.spawner.Update(&g.bulletManager, &g.player, &g.score)
+		entities.UpdateBulletManager(&g.bulletManager, &g.spawner, &g.player, &g.score)
 	}
 
 	return nil
@@ -91,9 +76,6 @@ func (g *Game) Update() error {
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
-	op := text.DrawOptions{}
-	op.ColorScale.ScaleWithColor(color.White)
-
 	g.player.Draw(screen)
 	g.spawner.Draw(screen)
 	for i := range g.bulletManager.Arr {
@@ -102,26 +84,8 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		}
 	}
 
-	op.GeoM.Translate(8, 8)
-	text.Draw(screen, fmt.Sprintf("FPS : %.2f", ebiten.ActualFPS()), &text.GoTextFace{Source: source, Size: 16}, &op)
-	op.GeoM.Translate(0, 21)
-	text.Draw(screen, fmt.Sprintf("Hp : %v", g.player.Hp.GetHp()), &text.GoTextFace{Source: source, Size: 16}, &op)
-	op.GeoM.Translate(0, 29)
-	//text.Draw(screen, fmt.Sprintf("Score:ComingSoon"), &text.GoTextFace{Source: source, Size: 16}, &op)
+	g.DrawUi(screen)
 
-	if g.state != normal {
-		vector.DrawFilledRect(screen, 0, 0, 1280, 720, color.RGBA{60, 60, 60, 100}, true)
-		textOptions := text.GoTextFace{Source: source, Size: 64}
-		if g.state == paused {
-			op.GeoM.Translate(640-96, 360-64)
-			text.Draw(screen, "Paused", &textOptions, &op)
-		} else {
-			op.GeoM.Translate(640-64, 360-64)
-			text.Draw(screen, "Died", &textOptions, &op)
-			op.GeoM.Translate(-5*64, 64)
-			text.Draw(screen, "Press Enter to Restart", &textOptions, &op)
-		}
-	}
 	//ebitenutil.DebugPrint(screen, "Hello, World!")
 	//ebitenutil.DebugPrintAt(screen, fmt.Sprintf("FPS : %.4v", ebiten.ActualFPS()), 0, 15)
 	//ebitenutil.DebugPrintAt(screen, fmt.Sprintf("Bullets : %v", g.bulletManager.Size), 0, 25)
@@ -145,4 +109,16 @@ func main() {
 	if err := ebiten.RunGame(game); err != nil {
 		log.Fatal(err)
 	}
+	if game.highscore < game.score {
+		file, err := os.OpenFile("bestscore.txt", os.O_WRONLY|os.O_TRUNC, 0644)
+		if err != nil {
+			log.Fatal("Error saving bestscore openign file :", err)
+		}
+		_, err = file.WriteString(strconv.Itoa(game.score))
+		if err != nil {
+			log.Fatal("Error wrting best score : ", err)
+		}
+		defer file.Close()
+	}
+
 }

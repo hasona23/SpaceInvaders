@@ -31,7 +31,7 @@ func (player Player) Init() Player {
 	}
 
 	var err error
-	player.Atlas, _, err = ebitenutil.NewImageFromFile("D:/Code/Go/Projects/spaceInvaders/assets/images/tilemap_packed.png")
+	player.Atlas, _, err = ebitenutil.NewImageFromFile("./assets/images/tilemap_packed.png")
 	if err != nil {
 		log.Fatalf("Sorry failed import image as %v", err)
 	}
