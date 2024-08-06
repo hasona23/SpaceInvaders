@@ -4,7 +4,6 @@ go 1.22.4
 
 require (
 	github.com/hajimehoshi/ebiten/v2 v2.7.8
-	github.com/hasona23/vec v0.0.0-00010101000000-000000000000
 )
 
 require (
@@ -18,5 +17,3 @@ require (
 	golang.org/x/sys v0.22.0 // indirect
 	golang.org/x/text v0.16.0 // indirect
 )
-
-replace github.com/hasona23/vec => /home/hasona23/Desktop/Go/Projects/vec/

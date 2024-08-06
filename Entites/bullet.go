@@ -7,7 +7,6 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	components "github.com/hasona23/SpaceInvaders/Components"
-	vec "github.com/hasona23/vec"
 )
 
 type Bullet struct {
@@ -46,7 +45,7 @@ func (bullet *Bullet) Update() {
 	bullet.Dead = (bullet.Transform.X > 1300 || bullet.Transform.X < -100)
 	bullet.Rect.Move(bullet.Transform.X, bullet.Transform.Y)
 }
-func UpdateBulletManager(bulletManager *vec.Vec[Bullet], enemyspawner *EnemySpawner, player *Player, score *int) {
+func UpdateBulletManager(bulletManager *Vec[Bullet], enemyspawner *EnemySpawner, player *Player, score *int) {
 	for i, b := range bulletManager.Arr {
 		for j, b2 := range bulletManager.Arr {
 			if b.Rect.Intersect(b2.Rect) && !b.Dead && !b2.Dead && b2 != b {

@@ -7,7 +7,6 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	components "github.com/hasona23/SpaceInvaders/Components"
-	"github.com/hasona23/vec"
 )
 
 type Enemy struct {
@@ -53,7 +52,7 @@ func (enemy *Enemy) Draw(screen *ebiten.Image) {
 
 }
 
-func (enemy *Enemy) Update(bulletManager *vec.Vec[Bullet], player *Player, score *int) {
+func (enemy *Enemy) Update(bulletManager *Vec[Bullet], player *Player, score *int) {
 	if enemy.Dead {
 		return
 	}
@@ -72,7 +71,7 @@ func (enemy *Enemy) Update(bulletManager *vec.Vec[Bullet], player *Player, score
 }
 
 type EnemySpawner struct {
-	vec.Vec[Enemy]
+	Vec[Enemy]
 	components.Timer
 }
 
@@ -82,7 +81,7 @@ func (spawner EnemySpawner) Init() EnemySpawner {
 
 	return spawner
 }
-func (spawner *EnemySpawner) Update(bulletManager *vec.Vec[Bullet], player *Player, score *int) {
+func (spawner *EnemySpawner) Update(bulletManager *Vec[Bullet], player *Player, score *int) {
 	spawner.Timer.UpdateTimer()
 	if spawner.Ticked() {
 		spawner.PushBack(Enemy{}.Init())

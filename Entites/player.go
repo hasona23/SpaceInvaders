@@ -6,7 +6,6 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	components "github.com/hasona23/SpaceInvaders/Components"
-	"github.com/hasona23/vec"
 )
 
 type Player struct {
@@ -58,14 +57,14 @@ func (player Player) Draw(screen *ebiten.Image) {
 	screen.DrawImage(player.Img, &op)
 
 }
-func (player *Player) Update(bulletManager *vec.Vec[Bullet]) {
+func (player *Player) Update(bulletManager *Vec[Bullet]) {
 
 	player.Move()
 	player.shoot(bulletManager)
 	player.AnimSprite.Update()
 
 }
-func (player *Player) shoot(bulletManager *vec.Vec[Bullet]) {
+func (player *Player) shoot(bulletManager *Vec[Bullet]) {
 	player.UpdateTimer()
 
 	if ebiten.IsKeyPressed(ebiten.KeyE) && player.Ticked() {

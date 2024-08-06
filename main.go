@@ -7,7 +7,6 @@ import (
 	"strconv"
 
 	entities "github.com/hasona23/SpaceInvaders/Entites"
-	vec "github.com/hasona23/vec"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
@@ -16,7 +15,7 @@ import (
 
 type Game struct {
 	player        entities.Player
-	bulletManager vec.Vec[entities.Bullet]
+	bulletManager entities.Vec[entities.Bullet]
 	spawner       entities.EnemySpawner
 	screenFilter  *ebiten.Image
 	score         int
